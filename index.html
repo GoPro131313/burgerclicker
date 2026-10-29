@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cheeseburger Licker: Fries Ascension</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .main-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-right: 2px solid #34495e;
+            background: radial-gradient(circle, #34495e 0%, #2c3e50 100%);
+        }
+        .sidebar {
+            width: 350px;
+            background-color: #1a252f;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+        }
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 2rem;
+            color: #f1c40f;
+            text-shadow: 2px 2px #c0392b;
+        }
+        .stats {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .lick-count {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #e67e22;
+        }
+        .sub-stat {
+            font-size: 1rem;
+            color: #bdc3c7;
+        }
+        .click-target {
+            font-size: 120px;
+            cursor: pointer;
+            transition: transform 0.05s ease-in-out;
+            filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.5));
+        }
+        .click-target:active {
+            transform: scale(0.9);
+        }
+        .shop-item {
+            background-color: #2c3e50;
+            border: 2px solid #34495e;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .shop-item:hover:not(.disabled) {
+            background-color: #34495e;
+            border-color: #f39c12;
+        }
+        .shop-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .shop-title {
+            font-weight: bold;
+            color: #f1c40f;
+        }
+        .shop-desc {
+            font-size: 0.85rem;
+            color: #bdc3c7;
+            margin: 4px 0;
+        }
+        .shop-cost {
+            font-size: 0.9rem;
+            color: #2ecc71;
+            font-weight: bold;
+        }
+        .ascend-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            display: none;
+            box-shadow: 0 4px #c0392b;
+            text-transform: uppercase;
+        }
+        .ascend-btn:hover {
+            background-color: #c0392b;
+        }
+        .ascend-btn:active {
+            box-shadow: 0 2px #7f8c8d;
+            transform: translateY(2px);
+        }
+        .banner {
+            padding: 10px;
+            background-color: #f39c12;
+            color: #2c3e50;
+            font-weight: bold;
+            border-radius: 6px;
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-panel">
+        <h1 id="stage-title">Cheeseburger Licker</h1>
+        <div class="stats">
+            <div class="lick-count" id="licks">0</div>
+            <div class="sub-stat" id="lps">0 Licks / sec</div>
+            <div class="sub-stat" id="lpc">1 Lick / click</div>
+        </div>
+        <div class="click-target" id="target">🍔</div>
+    </div>
+
+    <div class="sidebar">
+        <h2>Upgrades</h2>
+        <div id="ascension-banner" class="banner">✨ ASCENDED TO FRIES ✨<br><small>All Licks Multiplied by 5x!</small></div>
+        
+        <button id="ascend-btn" class="ascend-btn" onclick="ascend()">
+            🍟 Ascend to Fry Licking!<br><small>(Requires 1,000,000,000 Licks)</small>
+        </button>
+
+        <div class="shop-item" id="upg-tongue" onclick="buyClickUpgrade()">
+            <div class="shop-title">Rougher Tongue</div>
+            <div class="shop-desc">+1 Lick per click</div>
+            <div class="shop-cost" id="cost-tongue">Cost: 15 Licks</div>
+        </div>
+
+        <div class="shop-item" id="upg-auto" onclick="buyAutoLicker()">
+            <div class="shop-title">Robotic Tongue</div>
+            <div class="shop-desc">+1 Lick per second</div>
+            <div class="shop-cost" id="cost-auto">Cost: 50 Licks</div>
+        </div>
+
+        <div class="shop-item" id="upg-dog" onclick="buyDogLicker()">
+            <div class="shop-title">Friendly Dog Helper</div>
+            <div class="shop-desc">+10 Licks per second</div>
+            <div class="shop-cost" id="cost-dog">Cost: 500 Licks</div>
+        </div>
+
+        <div class="shop-item" id="upg-lizard" onclick="buyLizardLicker()">
+            <div class="shop-title">Chameleon Crew</div>
+            <div class="shop-desc">+100 Licks per second</div>
+            <div class="shop-cost" id="cost-lizard">Cost: 5,000 Licks</div>
+        </div>
+        
+        <div class="shop-item" id="upg-factory" onclick="buyLickFactory()">
+            <div class="shop-title">Industrial Licking Machine</div>
+            <div class="shop-desc">+5,000 Licks per second</div>
+            <div class="shop-cost" id="cost-factory">Cost: 250,000 Licks</div>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        let state = {
+            licks: 0,
+            licksPerClick: 1,
+            licksPerSecond: 0,
+            ascended: false,
+            multiplier: 1,
+            
+            // Costs & Counts
+            tongueCost: 15,
+            tongueLevel: 0,
+            
+            autoCost: 50,
+            autoLevel: 0,
+            
+            dogCost: 500,
+            dogLevel: 0,
+
+            lizardCost: 5000,
+            lizardLevel: 0,
+
+            factoryCost: 250000,
+            factoryLevel: 0
+        };
+
+        const targetEl = document.getElementById('target');
+        const licksEl = document.getElementById('licks');
+        const lpsEl = document.getElementById('lps');
+        const lpcEl = document.getElementById('lpc');
+        const ascendBtn = document.getElementById('ascend-btn');
+
+        // Click Handler
+        targetEl.addEventListener('click', () => {
+            addLicks(state.licksPerClick * state.multiplier);
+        });
+
+        function addLicks(amount) {
+            state.licks += amount;
+            updateUI();
+        }
+
+        // Upgrade Functions
+        function buyClickUpgrade() {
+            if (state.licks >= state.tongueCost) {
+                state.licks -= state.tongueCost;
+                state.licksPerClick += 1;
+                state.tongueLevel++;
+                state.tongueCost = Math.floor(state.tongueCost * 1.15);
+                updateUI();
+            }
+        }
+
+        function buyAutoLicker() {
+            if (state.licks >= state.autoCost) {
+                state.licks -= state.autoCost;
+                state.licksPerSecond += 1;
+                state.autoLevel++;
+                state.autoCost = Math.floor(state.autoCost * 1.15);
+                updateUI();
+            }
+        }
+
+        function buyDogLicker() {
+            if (state.licks >= state.dogCost) {
+                state.licks -= state.dogCost;
+                state.licksPerSecond += 10;
+                state.dogLevel++;
+                state.dogCost = Math.floor(state.dogCost * 1.15);
+                updateUI();
+            }
+        }
+
+        function buyLizardLicker() {
+            if (state.licks >= state.lizardCost) {
+                state.licks -= state.lizardCost;
+                state.licksPerSecond += 100;
+                state.lizardLevel++;
+                state.lizardCost = Math.floor(state.lizardCost * 1.15);
+                updateUI();
+            }
+        }
+
+        function buyLickFactory() {
+            if (state.licks >= state.factoryCost) {
+                state.licks -= state.factoryCost;
+                state.licksPerSecond += 5000;
+                state.factoryLevel++;
+                state.factoryCost = Math.floor(state.factoryCost * 1.15);
+                updateUI();
+            }
+        }
+
+        // Ascension Mechanic
+        function ascend() {
+            if (state.licks >= 1000000000) {
+                state.ascended = true;
+                state.multiplier = 5; // Permanent multiplier for French Fries
+                state.licks = 0;
+                state.licksPerClick = 1;
+                state.licksPerSecond = 0;
+
+                // Reset Upgrades
+                state.tongueCost = 15;
+                state.autoCost = 50;
+                state.dogCost = 500;
+                state.lizardCost = 5000;
+                state.factoryCost = 250000;
+
+                // Visual transformation
+                targetEl.textContent = '🍟';
+                document.getElementById('stage-title').textContent = 'French Fry Licker';
+                document.getElementById('ascension-banner').style.display = 'block';
+
+                updateUI();
+            }
+        }
+
+        // UI Refresh Loop
+        function updateUI() {
+            licksEl.textContent = Math.floor(state.licks).toLocaleString();
+            lpsEl.textContent = (state.licksPerSecond * state.multiplier).toLocaleString() + " Licks / sec";
+            lpcEl.textContent = (state.licksPerClick * state.multiplier).toLocaleString() + " Lick / click";
+
+            // Update Upgrade Buttons
+            updateShopItem('upg-tongue', 'cost-tongue', state.tongueCost, state.tongueLevel);
+            updateShopItem('upg-auto', 'cost-auto', state.autoCost, state.autoLevel);
+            updateShopItem('upg-dog', 'cost-dog', state.dogCost, state.dogLevel);
+            updateShopItem('upg-lizard', 'cost-lizard', state.lizardCost, state.lizardLevel);
+            updateShopItem('upg-factory', 'cost-factory', state.factoryCost, state.factoryLevel);
+
+            // Ascension Unlock Trigger
+            if (state.licks >= 1000000000 && !state.ascended) {
+                ascendBtn.style.display = 'block';
+            } else {
+                ascendBtn.style.display = 'none';
+            }
+        }
+
+        function updateShopItem(elementId, costId, cost, level) {
+            const el = document.getElementById(elementId);
+            const costEl = document.getElementById(costId);
+            costEl.textContent = `Cost: ${cost.toLocaleString()} Licks | Lvl: ${level}`;
+
+            if (state.licks < cost) {
+                el.classList.add('disabled');
+            } else {
+                el.classList.remove('disabled');
+            }
+        }
+
+        // Main Game Loop (10 ticks per second for smooth passive updates)
+        setInterval(() => {
+            if (state.licksPerSecond > 0) {
+                addLicks((state.licksPerSecond * state.multiplier) / 10);
+            }
+        }, 100);
+
+        // Initial UI render
+        updateUI();
+    </script>
+</body>
+</html>
